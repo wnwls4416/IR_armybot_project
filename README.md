@@ -15,8 +15,9 @@ ArmyBot은
 **훈련 데이터의 비정량적 관리 문제**를 해결하기 위해 개발된  
 지능형 로봇 자동화 시스템입니다.
 
-본 프로젝트는  
-:contentReference[oaicite:0]{index=0}의 **M0609 협동로봇**을 기반으로,  
+본 프로젝트
+
+: contentReference[oaicite:0]{index=0}의 **M0609 협동로봇**을 기반으로,  
 
 - 🎙 음성 인식 제어 시스템  
 - 👁 YOLO 기반 객체 탐지  
@@ -98,7 +99,7 @@ ArmyBot은 다음을 목표로 설계되었습니다:
 - HTML
 
 ## 🤖 Robotics
-- :contentReference[oaicite:1]{index=1} M0609
+- contentReference[oaicite:1]{index=1} M0609
 - DSR_ROBOT2 Python API
 - Onrobot RG2 Gripper
 
