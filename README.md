@@ -142,30 +142,45 @@ ArmyBot은 다음을 목표로 설계되었습니다:
 
 
 armybot/
+
 ├── robot_control.py
+
 ├── yolo_node.py
+
 ├── ai_count.py
+
 └── onrobot.py
 
 arduino_bridge/
+
 └── switch_edge_pub.py
 
 jarvis_project/
+
 └── jarvis.py
 
 resource/
+
 ├── brass_magazine.pt
+
 ├── calibration_matrix.yaml
+
 └── result/
 
 od_msg/srv/
+
 └── SrvDepthPosition.srv
 
 armbot_web/
+
 ├── commander.py
+
 ├── shooter.py
+
 ├── templates/
+
 ├───── commander.html
+
 └───── shooter.html
 
 ---
