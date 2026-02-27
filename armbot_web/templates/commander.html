@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROKEY COMMAND TOWER</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Noto+Sans+KR:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f0; --primary-dim: #0a470a; --alert: #ff3333;
+            --warning: #ffa500; /* 오렌지색 대기 경고용 */
+            --bg: #020202; --panel-bg: rgba(0, 15, 0, 0.9); --cyan: #00ffff;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            background-image: linear-gradient(to bottom, transparent 60%, var(--primary-dim) 100%),
+                repeating-linear-gradient(90deg, rgba(0,255,0,0.03) 0px, rgba(0,255,0,0.03) 1px, transparent 1px, transparent 40px);
+            color: var(--primary); font-family: 'Share Tech Mono', monospace;
+            margin: 0; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; text-shadow: 0 0 2px var(--primary);
+        }
+
+        .crt-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%); background-size: 100% 3px; pointer-events: none; z-index: 999; }
+        .console-wrapper { display: grid; grid-template-columns: 280px 1fr 280px; gap: 15px; width: 95%; max-width: 1600px; height: 85vh; padding: 20px; border: 1px solid var(--primary-dim); box-shadow: inset 0 0 50px rgba(0,50,0,0.3); }
+
+        .panel { background: var(--panel-bg); border: 2px solid var(--primary); padding: 15px; display: flex; flex-direction: column; position: relative; }
+        .panel-title { border-bottom: 1px solid var(--primary); margin-bottom: 15px; font-weight: bold; letter-spacing: 2px; padding-bottom: 5px; color: var(--primary); }
+        .center-panel { border: 3px solid var(--primary); box-shadow: 0 0 30px rgba(0, 255, 0, 0.15); }
+        .center-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .visual-display { flex-grow: 1; border: 1px solid var(--primary-dim); background: radial-gradient(circle at center, #0a350a 0%, #000 80%); position: relative; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+
+        #radar-ui { position: relative; width: 300px; height: 300px; }
+        .radar-circle { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 2px dashed var(--primary); border-radius: 50%; box-shadow: 0 0 15px var(--primary-dim); opacity: 0.7; }
+        .radar-scan { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0deg, rgba(0, 255, 0, 0.4) 60deg, transparent 60deg); animation: radar-spin 3s linear infinite; }
+        .radar-crosshair { position: absolute; top: 50%; left: 0; width: 100%; height: 1px; background: rgba(0, 255, 0, 0.3); }
+        .radar-crosshair.v { transform: rotate(90deg); }
+        @keyframes radar-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .voice-wave { display: none; width: 300px; height: 100px; background: repeating-linear-gradient(90deg, var(--primary) 0, var(--primary) 3px, transparent 3px, transparent 10px); animation: wave-move 0.5s infinite linear; opacity: 0.9; }
+        @keyframes wave-move { 0% { transform: scaleY(0.5); } 50% { transform: scaleY(1.5); } 100% { transform: scaleY(0.5); } }
+
+        .data-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 15px; }
+        .data-value { font-weight: bold; color: #fff; }
+        .bar-gauge { width: 80px; height: 10px; background: #002200; border: 1px solid var(--primary); }
+        .bar-fill { height: 100%; background: var(--primary); }
+        .log-terminal { height: 150px; overflow-y: auto; font-size: 14px; border-top: 2px solid var(--primary); padding-top: 10px; margin-top: 15px; background: rgba(0,0,0,0.5); }
+        .log-terminal::-webkit-scrollbar { width: 5px; }
+        .log-terminal::-webkit-scrollbar-thumb { background: var(--primary); }
+        .log-line { display: block; margin-bottom: 4px; }
+        .success { color: #fff; text-shadow: 0 0 5px #fff; }
+        .error { color: var(--alert); text-shadow: 0 0 5px red; }
+
+        #cmd-btn { width: 100%; margin-top: 15px; padding: 20px; background: transparent; border: 2px solid var(--primary); color: var(--primary); font-family: inherit; font-size: 20px; font-weight: bold; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+        #cmd-btn:hover { background: var(--primary); color: #000; box-shadow: 0 0 20px var(--primary); }
+        #cmd-btn:disabled { border-color: var(--alert); color: var(--alert); cursor: not-allowed; animation: blinker 1s infinite;}
+        @keyframes blinker { 50% { opacity: 0.5; } }
+
+        .corner { position: absolute; width: 10px; height: 10px; border: 2px solid var(--primary); }
+        .tl { top: -2px; left: -2px; border-right: 0; border-bottom: 0; }
+        .tr { top: -2px; right: -2px; border-left: 0; border-bottom: 0; }
+        .bl { bottom: -2px; left: -2px; border-right: 0; border-top: 0; }
+        .br { bottom: -2px; right: -2px; border-left: 0; border-top: 0; }
+
+        .restart-btn { position: fixed; bottom: 20px; right: 20px; background: transparent; border: 1px solid var(--alert); color: var(--alert); padding: 8px 12px; font-family: inherit; font-size: 12px; font-weight: bold; cursor: pointer; z-index: 1000; transition: 0.2s; }
+        .restart-btn:hover { background: var(--alert); color: #000; box-shadow: 0 0 10px var(--alert); }
+
+        /* ========================================= */
+        /* 기능고장 (JAMMED) 팝업창 스타일 */
+        /* ========================================= */
+        .jammed-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255, 0, 0, 0.3); z-index: 3000; display: none; justify-content: center; align-items: center; animation: bg-blink 1s infinite alternate; }
+        .jammed-box { background: #220000; border: 5px solid var(--alert); box-shadow: 0 0 50px var(--alert); padding: 50px 100px; text-align: center; border-radius: 10px; }
+        .jammed-text { color: var(--alert); font-size: 80px; font-weight: bold; font-family: 'Noto Sans KR', sans-serif; text-shadow: 0 0 30px var(--alert); animation: text-blink 0.5s infinite alternate; }
+        @keyframes bg-blink { from { background: rgba(255,0,0,0.1); } to { background: rgba(255,0,0,0.6); } }
+        @keyframes text-blink { from { opacity: 1; } to { opacity: 0.3; } }
+
+        /* ========================================= */
+        /* [추가] 대기 (SHOCKED) 팝업창 스타일 */
+        /* ========================================= */
+        .shocked-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 165, 0, 0.3); z-index: 3500; /* 기능고장보다 위 */
+            display: none; justify-content: center; align-items: center;
+            animation: bg-blink-orange 1s infinite alternate;
+        }
+        .shocked-box {
+            background: #221100; border: 5px solid var(--warning);
+            box-shadow: 0 0 50px var(--warning); padding: 50px 100px; text-align: center;
+            border-radius: 10px;
+        }
+        .shocked-text {
+            color: var(--warning); font-size: 80px; font-weight: bold;
+            font-family: 'Noto Sans KR', sans-serif; text-shadow: 0 0 30px var(--warning);
+            animation: text-blink-orange 0.5s infinite alternate;
+        }
+        @keyframes bg-blink-orange { from { background: rgba(255,165,0,0.1); } to { background: rgba(255,165,0,0.5); } }
+        @keyframes text-blink-orange { from { opacity: 1; } to { opacity: 0.3; } }
+    </style>
+</head>
+<body>
+    <div id="shocked-popup" class="shocked-overlay">
+        <div class="shocked-box">
+            <div class="shocked-text">⏳ 대 기 ⏳</div>
+            <div style="color:white; margin-top:20px; font-size:30px; font-family:'Share Tech Mono', monospace; font-weight:bold;">
+                SYSTEM STANDBY
+            </div>
+            <div style="color:#ffffaa; margin-top:15px; font-size:20px; font-family:'Noto Sans KR', sans-serif;">
+                안전 확보 중... 잠시 대기해 주십시오.
+            </div>
+        </div>
+    </div>
+
+    <div id="jammed-popup" class="jammed-overlay">
+        <div class="jammed-box">
+            <div class="jammed-text">⚠️ 기 능 고 장 ⚠️</div>
+            <div style="color:white; margin-top:20px; font-size:30px; font-family:'Share Tech Mono', monospace; font-weight:bold;">
+                WEAPON SYSTEM JAMMED
+            </div>
+            <div style="color:#ffaaaa; margin-top:15px; font-size:20px; font-family:'Noto Sans KR', sans-serif;">
+                사수의 응급 조치를 대기 중입니다...
+            </div>
+        </div>
+    </div>
+
+    <div class="crt-overlay"></div>
+
+    <div class="console-wrapper">
+        <div class="panel">
+            <div class="corner tl"></div><div class="corner bl"></div>
+            <div class="panel-title">LIVE WEATHER (SEOUL)</div>
+            <div class="data-row"><span>AMB TEMP:</span><span id="val-temp" class="data-value" style="color: var(--cyan);">LOADING...</span></div>
+            <div class="data-row"><span>WIND SPEED:</span><span id="val-wind" class="data-value">...</span></div>
+            <div class="data-row"><span>REL HUMIDITY:</span><span id="val-humid" class="data-value">...</span></div>
+            <div class="data-row"><span>CONDITION:</span><span id="val-cond" class="data-value" style="font-size:12px;">SCANNING</span></div>
+            <br>
+            <div class="panel-title">ROBOT STATUS</div>
+            <div class="data-row"><span>BATTERY:</span><div class="bar-gauge"><div class="bar-fill" style="width:98%"></div></div></div>
+            <div class="data-row"><span>JOINT LOAD:</span><div class="bar-gauge"><div class="bar-fill" style="width:12%"></div></div></div>
+            <div class="data-row"><span>WIFI SIG:</span><div class="bar-gauge"><div class="bar-fill" style="width:85%"></div></div></div>
+            <div style="margin-top:auto; font-size:12px; opacity:0.6;">DATA SOURCE: OPEN-METEO<br>LOC: <span id="loc-text">GURO DIGITAL</span></div>
+        </div>
+
+        <div class="panel center-panel">
+            <div class="center-header">
+                <div style="font-size: 24px; font-weight: bold;">TACTICAL COMMAND</div>
+                <div id="status-text" style="color: var(--alert);" class="blink-alert">STANDBY</div>
+            </div>
+            <div class="visual-display">
+                <div id="radar-ui"><div class="radar-circle"></div><div class="radar-crosshair"></div><div class="radar-crosshair v"></div><div class="radar-scan"></div><div style="position:absolute; bottom:-30px; width:100%; text-align:center; font-size:12px;">SCANNING PERIMETER...</div></div>
+                <div id="voice-ui" class="voice-wave"></div>
+            </div>
+            <div class="log-terminal" id="log-box">
+                <span class="log-line">SYSTEM INITIALIZED.</span>
+                <span class="log-line">LINKING TO GURO DIGITAL TOWER...</span>
+            </div>
+            <button id="cmd-btn" onclick="executeOrder()">[ ENGAGE VOICE COMMAND ]</button>
+        </div>
+
+        <div class="panel">
+            <div class="corner tr"></div><div class="corner br"></div>
+            <div class="panel-title">MISSION OBJECTIVES</div>
+            <ul style="padding-left: 20px; margin: 0; font-size: 14px; list-style-type: square;">
+                <li style="margin-bottom:10px;">MAGAZINE RELOAD</li>
+                <li style="margin-bottom:10px;">BRASS CHECK</li>
+                <li style="margin-bottom:10px;">FIRE SUPPORT</li>
+            </ul>
+            <br>
+            <div class="panel-title">ALERTS</div>
+            <div id="weather-alert" style="color:var(--alert); font-size:13px;">CALCULATING BALLISTICS...</div>
+            <div style="margin-top:auto; text-align:right; font-size:32px; font-weight:bold; opacity:0.3;">DEFCON 4</div>
+        </div>
+    </div>
+
+    <button class="restart-btn" onclick="triggerRestart()">↻ SYSTEM RESTART</button>
+
+    <script>
+        const logBox = document.getElementById('log-box');
+        const radarUI = document.getElementById('radar-ui');
+        const voiceUI = document.getElementById('voice-ui');
+        const statusText = document.getElementById('status-text');
+
+        function initWeatherSystem() { fetchWeather(37.485, 126.901, "GURO DIGITAL (SEOUL)"); }
+
+        async function fetchWeather(lat, lon, locName) {
+            document.getElementById('loc-text').innerText = locName;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&wind_speed_unit=ms`;
+            try {
+                const response = await fetch(url);
+                const current = (await response.json()).current;
+                document.getElementById('val-temp').innerText = current.temperature_2m + "°C";
+                document.getElementById('val-wind').innerText = current.wind_speed_10m + " m/s";
+                document.getElementById('val-humid').innerText = current.relative_humidity_2m + "%";
+                const code = current.weather_code; let condText = "CLEAR";
+                if(code > 0 && code <= 3) condText = "PARTLY CLOUDY"; else if(code > 3 && code < 50) condText = "FOG/HAZE"; else if(code >= 50 && code < 80) condText = "RAINY"; else if(code >= 80) condText = "STORMY";
+                document.getElementById('val-cond').innerText = condText;
+                addLog(`METEO DATA SYNCED: ${current.temperature_2m}°C (GURO)`, "success");
+            } catch (error) { addLog("WEATHER UPLINK FAILED.", "error"); document.getElementById('val-temp').innerText = "ERR"; }
+        }
+
+        function addLog(msg, type='normal') {
+            const span = document.createElement('span'); span.className = 'log-line ' + type;
+            span.innerHTML = `[${new Date().toLocaleTimeString('en-US', {hour12: false})}] > ${msg}`;
+            logBox.appendChild(span); logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        async function executeOrder() {
+            const btn = document.getElementById('cmd-btn');
+            btn.disabled = true; btn.innerText = "/// RECEIVING AUDIO ///"; btn.style.color = "var(--alert)"; btn.style.borderColor = "var(--alert)";
+            radarUI.style.display = 'none'; voiceUI.style.display = 'block';
+            statusText.innerText = "RECORDING..."; statusText.style.color = "var(--primary)"; addLog("MICROPHONE ACTIVE.", "normal");
+
+            try {
+                const response = await fetch('/execute_command', { method: 'POST', headers: {'Content-Type': 'application/json'} });
+                const data = await response.json(); addLog(`INPUT: "${data.text}"`);
+                if(data.keyword !== "unknown" && data.keyword !== "error") {
+                    addLog(`COMMAND CONFIRMED: [${data.keyword}]`, "success"); addLog(`ACTION: ${data.result}`, "success");
+                } else { addLog("ERROR: UNIDENTIFIED COMMAND", "error"); }
+            } catch (err) { addLog(`SYSTEM FAILURE: ${err}`, "error");
+            } finally {
+                btn.disabled = false; btn.innerText = "[ ENGAGE VOICE COMMAND ]"; btn.style.color = ""; btn.style.borderColor = "";
+                radarUI.style.display = 'block'; radarUI.parentElement.style.display = 'flex';
+                voiceUI.style.display = 'none'; statusText.innerText = "STANDBY"; statusText.style.color = "var(--alert)";
+            }
+        }
+
+        async function triggerRestart() {
+            if(!confirm("⚠️ 경고: 시스템을 재시작하고 Shooter UI를 초기화하시겠습니까?")) return;
+            try { addLog((await (await fetch('/send_restart', { method: 'POST' })).json()).result, "error"); 
+            } catch (err) { addLog("RESTART FAILED", "error"); }
+        }
+
+        // =========================================
+        // 기능고장 및 대기 상태 확인 로직 통합
+        // =========================================
+        async function checkStatus() {
+            try {
+                const response = await fetch('/status');
+                const data = await response.json();
+                
+                const jammedPopup = document.getElementById('jammed-popup');
+                const shockedPopup = document.getElementById('shocked-popup');
+                
+                // 1. 기능고장(Jammed) 제어
+                if (data.is_jammed) {
+                    if(jammedPopup.style.display !== 'flex') {
+                        jammedPopup.style.display = 'flex';
+                        addLog("CRITICAL WARNING: WEAPON SYSTEM JAMMED!", "error");
+                    }
+                } else {
+                    if(jammedPopup.style.display === 'flex') {
+                        jammedPopup.style.display = 'none';
+                        addLog("WEAPON SYSTEM CLEARED.", "success");
+                    }
+                }
+
+                // 2. 대기(Shocked) 제어
+                if (data.is_shocked) {
+                    if(shockedPopup.style.display !== 'flex') {
+                        shockedPopup.style.display = 'flex';
+                        addLog("SYSTEM ON STANDBY (SHOCK DETECTED)", "normal");
+                    }
+                } else {
+                    if(shockedPopup.style.display === 'flex') {
+                        shockedPopup.style.display = 'none';
+                        addLog("STANDBY CLEARED. RESUMING...", "success");
+                    }
+                }
+
+            } catch (error) { console.error("상태 확인 실패:", error); }
+        }
+
+        window.onload = function() {
+            initWeatherSystem();
+            setInterval(initWeatherSystem, 300000); 
+            setInterval(checkStatus, 500); // 0.5초마다 상태 확인
+        };
+    </script>
+</body>
+</html>
