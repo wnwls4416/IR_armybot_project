@@ -188,39 +188,56 @@ armbot_web/
 # ▶️ How to Run
 
 ## Arduino Bridge
+
 cd ir_gunshot_staff
+
 colcon build --packages-select armybot arduino_bridge
+
 source install/setup.bash
+
 ros2 run arduino_bridge switch_edge_pub
 
 ## Voice Control System
+
 cd ir_gunshot_staff/src/jarvis_project
+
 python3 jarvis.py
 
 ## Armybot
-─── Terminal 1
+─── Terminal 1 ───
+
 ros2 launch dsr_bringup2 dsr_bringup2_rviz.launch.py mode:=real host:=192.168.1.100 port:=12345 model:=m0609
 
-─── Terminal 2
+─── Terminal 2 ───
+
 ros2 launch realsense2_camera rs_align_depth_launch.py depth_module.depth_profile:=848x480x30 rgb_camera.color_profile:=1280x720x30 initial_reset:=true align_depth.enable:=true enable_rgbd:=true enable_infra:=true enable_infra1:=true enable_infra2:=true depth_module.emitter_enabled:=1 pointcloud.enable:=true
 
-─── Terminal 3
+─── Terminal 3 ───
+
 realsense-viewer
 └──realsenseIRconfig.json
 
-─── Terminal 4
+─── Terminal 4 ───
+
 cd ir_gunshot_staff
+
 colcon build --packages-select armybot
+
 source install/setup.bash
+
 ros2 launch armybot armybot.launch.py
 
 ## UI
-─── Terminal 5
+─── Terminal 5 ───
+
 cd ir_gunshot_staff/src/armbot_web
+
 python3 commander.py
 
-─── Terminal 6
+─── Terminal 6 ───
+
 cd ir_gunshot_staff/src/armbot_web
+
 python3 shooter.py
 
 # 💡 What I Learned
