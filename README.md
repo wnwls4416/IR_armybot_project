@@ -215,6 +215,7 @@ ros2 launch realsense2_camera rs_align_depth_launch.py depth_module.depth_profil
 ─── Terminal 3 ───
 
 realsense-viewer
+
 └──realsenseIRconfig.json
 
 ─── Terminal 4 ───
