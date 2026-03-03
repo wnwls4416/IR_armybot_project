@@ -1,7 +1,6 @@
 # IR_armybot_project
 로봇팔(m0609)와 IR_Camera를 사용해서 야간사격 프로젝트
 
-[readme_threeman.md](https://github.com/user-attachments/files/25590816/readme_threeman.md)
 # 🎯 ArmyBot Project  
 > ROS 2 + AI Vision + 음성 제어 기반 **군 사격 훈련 전 과정 자동화 시스템**
 
