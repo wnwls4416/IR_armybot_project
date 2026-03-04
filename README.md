@@ -69,10 +69,8 @@ ArmyBot은 다음을 목표로 설계되었습니다:
 ---
 
 # 🔄 System Flow
+<img width="979" height="555" alt="image" src="https://github.com/user-attachments/assets/64007740-2875-4ead-b298-214536292968" />
 
-<p align="center">
-  <img src="./Flow_chart.png" width="450">
-</p>
 
 ### 동작 순서
 
