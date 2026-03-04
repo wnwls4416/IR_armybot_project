@@ -50,9 +50,11 @@ ArmyBot은 다음을 목표로 설계되었습니다:
 
 # 🏗 System Architecture
 
-<p align="center">
-  <img src="./System_Architecture.png" width="700">
-</p>
+<img width="979" height="555" alt="image" src="https://github.com/user-attachments/assets/97ad4fce-8b98-4a8e-8da4-7670ad5af4f2" />
+
+<img width="905" height="490" alt="image" src="https://github.com/user-attachments/assets/69a59126-558d-413b-9a29-da121af69d24" />
+
+
 
 ### 핵심 구성 요소
 
